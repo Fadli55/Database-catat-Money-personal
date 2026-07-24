@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 24, 2026 at 09:40 AM
+-- Generation Time: Jul 24, 2026 at 10:29 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -87,6 +87,22 @@ CREATE TABLE `tag` (
   `nama_tag` varchar(50) DEFAULT NULL,
   `dibuat` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `tag`
+--
+
+INSERT INTO `tag` (`tag_id`, `nama_tag`, `dibuat`) VALUES
+(1, 'Penting', '2026-07-24 15:16:23'),
+(2, 'Jajan', '2026-07-24 15:16:23'),
+(3, 'Darurat', '2026-07-24 15:16:23'),
+(4, 'Cicilan', '2026-07-24 15:16:23'),
+(5, 'Healing', '2026-07-24 15:16:23'),
+(6, 'Bulanan', '2026-07-24 15:16:23'),
+(7, 'Kirim', '2026-07-24 15:16:23'),
+(8, 'Hadiah', '2026-07-24 15:16:23'),
+(9, 'BPJS', '2026-07-24 15:16:23'),
+(10, 'Kuliah', '2026-07-24 15:28:28');
 
 -- --------------------------------------------------------
 
@@ -200,7 +216,7 @@ ALTER TABLE `pengguna`
 -- AUTO_INCREMENT for table `tag`
 --
 ALTER TABLE `tag`
-  MODIFY `tag_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `tag_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `transaksi`
