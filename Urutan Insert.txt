@@ -1,0 +1,8 @@
+Urutan Insert:
+-tag ✌️
+-pengguna ✌️
+-kategori_transaksi ✌️
+-akun ✌️
+-anggaran_bulanan ✌️
+-transaksi ✌️
+-transaksi_tag ✌️

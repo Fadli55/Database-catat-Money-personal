@@ -1,0 +1,57 @@
+CREATE TABLE tag(
+tag_id int AUTO_INCREMENT PRIMARY KEY,
+nama_tag varchar(50),
+dibuat datetime
+);
+
+CREATE TABLE pengguna(
+pengguna_id int AUTO_INCREMENT PRIMARY KEY,
+nama varchar(150),
+email varchar(150),
+dibuat datetime);
+
+CREATE TABLE kategori_transaksi(
+kategori_id int AUTO_INCREMENT PRIMARY KEY,
+nama_kategori varchar(100),
+jenis varchar(30));
+
+CREATE TABLE transaksi(
+transaksi_id int AUTO_INCREMENT PRIMARY KEY,
+pengguna_id int,
+kategori_id int,
+jenis_transaksi varchar(50),
+jumlah decimal(15,2),
+tanggal_transaksi date,
+deskripsi varchar(255),
+dibuat datetime,
+FOREIGN KEY (pengguna_id) REFERENCES pengguna (pengguna_id),
+FOREIGN KEY (kategori_id) REFERENCES kategori_transaksi (kategori_id)
+);
+
+CREATE TABLE transaksi_tag(
+tag_id INT,
+transaksi_id int,
+PRIMARY KEY (tag_id,transaksi_id),
+FOREIGN KEY (tag_id) REFERENCES tag(tag_id),
+FOREIGN KEY (transaksi_id) REFERENCES transaksi (transaksi_id)
+);
+
+CREATE TABLE akun(
+akun_id int AUTO_INCREMENT PRIMARY KEY,
+pengguna_id int,
+nama_pengguna varchar(70),
+kata_sandi varchar(255),
+dibuat datetime,
+FOREIGN KEY (pengguna_id) REFERENCES pengguna (pengguna_id));
+
+CREATE TABLE anggaran_bulanan(
+anggaran_id int AUTO_INCREMENT PRIMARY KEY,
+pengguna_id int,
+kategori_id int,
+bulan int,
+tahun int,
+jumlah_anggaran decimal(15,2),
+dibuat datetime,
+FOREIGN KEY (pengguna_id) REFERENCES pengguna (pengguna_id),
+FOREIGN KEY (kategori_id) REFERENCES kategori_transaksi (kategori_id)
+);

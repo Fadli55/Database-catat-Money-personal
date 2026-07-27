@@ -1,0 +1,11 @@
+INSERT INTO kategori_transaksi (nama_kategori,jenis) VALUES
+('Gaji','pemasukan'),
+('Bonus','pemasukan'),
+('Transferan','pemasukan'),
+('Makan','pengeluaran'),
+('Transport','pengeluaran'),
+('Jalan-jalan','pengeluaran'),
+('Nikah','pengeluaran'),
+('Subscribtion','pengeluaran'),
+('Investasi','pemasukan'),
+('Cicilan','pengeluaran');

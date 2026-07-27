@@ -1,0 +1,11 @@
+INSERT INTO tag (nama_tag,dibuat) VALUES
+('Penting',NOW()),
+('Jajan',NOW()),
+('Darurat',NOW()),
+('Cicilan',NOW()),
+('Healing',NOW()),
+('Bulanan',NOW()),
+('Kirim',NOW()),
+('Hadiah',NOW()),
+('BPJS',NOW()),
+('Kuliah',NOW());

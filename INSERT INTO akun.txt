@@ -1,0 +1,11 @@
+INSERT INTO akun (pengguna_id,nama_pengguna,kata_sandi,dibuat) VALUES
+(1,'Lezuy','naruKami99',NOW()),
+(2,'Viraaaaa','Vanggraini@',NOW()),
+(3,'AlSur','suryati@123',NOW()),
+(4,'TheNaila','nalapass232425',NOW()),
+(5,'LesNa','MondayThe@32',NOW()),
+(6,'Ramadannn','fajarfajar@190',NOW()),
+(7,'DDwiAyu','dewisendani010',NOW()),
+(8,'Hendra25','saputra_909',NOW()),
+(9,'Eksaputri20','putribersahaja!',NOW()),
+(10,'Karmelayu','carmila33@11',NOW());

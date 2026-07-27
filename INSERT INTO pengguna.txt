@@ -1,0 +1,11 @@
+INSERT INTO pengguna (nama,email,dibuat) VALUES
+('Ahmad Rizki Fadli','lezuy1908@gmail.com',NOW()),
+('Vira Anggraini Mareta','viraanggrainimareta@students.amikom.ac.id',NOW()),
+('Alya Nabila Suryati','alyanabill@students.amikom.ac.id',NOW()),
+('Naila Dewi','Dnail@gmail.com',NOW()),
+('Nana Lestari','nalestari@gmail.com',NOW()),
+('Fajar Ramadhan','fajar2234@gmail.com',NOW()),
+('Ani Dewi','anidewi3@gmail.com',NOW()),
+('Hendra Saputra','saputra80@gmail.com',NOW()),
+('Eka Putri','ekaputri20@gmail.com',NOW()),
+('Karmela Ayu Putri','karmeputri44@gmail.com',NOW());
