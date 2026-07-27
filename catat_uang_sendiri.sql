@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 27, 2026 at 08:38 PM
+-- Generation Time: Jul 27, 2026 at 09:05 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,29 @@ SET time_zone = "+00:00";
 --
 -- Database: `catat_uang_sendiri`
 --
+
+DELIMITER $$
+--
+-- Functions
+--
+CREATE DEFINER=`root`@`localhost` FUNCTION `totalPengeluaran` () RETURNS DECIMAL(15,2) DETERMINISTIC BEGIN
+	DECLARE total decimal(15,2);
+    SELECT SUM(jumlah) INTO total
+    FROM transaksi
+    WHERE jenis_transaksi = 'pengeluaran';
+    RETURN total;
+END$$
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `totalTransaksiBulanan` (`id_pengguna` INT, `bulan` INT) RETURNS DECIMAL(15,2) DETERMINISTIC BEGIN
+	DECLARE total decimal(15,2);
+    SELECT SUM(jumlah) INTO total
+    FROM transaksi
+    WHERE pengguna_id = id_pengguna 
+    	AND MONTH(tanggal_transaksi) = bulan;
+    RETURN IFNULL(total,0);
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
