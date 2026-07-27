@@ -1,0 +1,1 @@
+SELECT nama,(SELECT totalPengeluaran()) AS Total_Pengeluaran FROM pengguna

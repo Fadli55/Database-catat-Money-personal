@@ -1,0 +1,12 @@
+DELIMITER //
+CREATE FUNCTION totalPengeluaran()
+RETURNS decimal(15,2)
+DETERMINISTIC
+BEGIN
+	DECLARE total decimal(15,2);
+    SELECT SUM(jumlah) INTO total
+    FROM transaksi
+    WHERE jenis_transaksi = 'pengeluaran';
+    RETURN total;
+END //
+DELIMITER ;

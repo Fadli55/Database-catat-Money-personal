@@ -1,0 +1,13 @@
+DELIMITER //
+CREATE FUNCTION totalTransaksiBulanan(id_pengguna int, bulan int)
+RETURNS decimal(15,2)
+DETERMINISTIC
+BEGIN
+	DECLARE total decimal(15,2);
+    SELECT SUM(jumlah) INTO total
+    FROM transaksi
+    WHERE pengguna_id = id_pengguna 
+    	AND MONTH(tanggal_transaksi) = bulan;
+    RETURN IFNULL(total,0);
+END //
+DELIMITER ;

@@ -1,0 +1,6 @@
+SELECT p.nama, kt.nama_kategori, totalTransaksiBulanan(p.pengguna_id, 7) AS total_juli
+FROM pengguna p
+JOIN transaksi t ON p.pengguna_id = t.pengguna_id
+JOIN kategori_transaksi kt ON t.kategori_id = kt.kategori_id
+GROUP BY p.pengguna_id, p.nama, kt.nama_kategori
+ORDER BY p.nama;
