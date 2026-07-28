@@ -1,0 +1,16 @@
+DELIMITER $$
+CREATE TRIGGER trg_validasi_transaksi
+BEFORE INSERT ON transaksi
+FOR EACH ROW
+BEGIN
+    IF NEW.jumlah < 0 THEN
+        SET NEW.jumlah = ABS(NEW.jumlah);
+    END IF;
+
+    IF NEW.jenis_transaksi IS NULL THEN
+        SET NEW.jenis_transaksi = (
+            SELECT jenis FROM kategori_transaksi WHERE kategori_id = NEW.kategori_id
+        );
+    END IF;
+END$$
+DELIMITER ;

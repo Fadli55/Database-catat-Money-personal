@@ -1,0 +1,6 @@
+INSERT INTO view_transaksi_pengeluaran
+    (transaksi_id, pengguna_id, kategori_id, jenis_transaksi, jumlah, tanggal_transaksi, deskripsi)
+VALUES
+    (99001, 2, 5, 'pengeluaran', 275000, '2026-07-28', 'Insert lewat view horizontal');
+
+SELECT * FROM transaksi WHERE transaksi_id = 99001;

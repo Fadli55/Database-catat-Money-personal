@@ -1,0 +1,1 @@
+SHOW FULL TABLES FROM catat_uang_sendiri WHERE Table_type = 'VIEW';

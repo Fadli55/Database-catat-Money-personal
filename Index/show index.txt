@@ -1,0 +1,3 @@
+SHOW INDEX FROM transaksi_arsip;
+SHOW INDEX FROM transaksi;
+SHOW INDEX FROM anggaran_bulanan;

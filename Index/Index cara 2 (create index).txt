@@ -1,0 +1,2 @@
+CREATE INDEX idx_transaksi_kategori_tanggal
+    ON transaksi (kategori_id, tanggal_transaksi);

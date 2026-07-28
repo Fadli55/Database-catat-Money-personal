@@ -1,0 +1,3 @@
+CREATE VIEW view_akun_aman AS
+SELECT akun_id, pengguna_id, nama_pengguna, dibuat
+  FROM akun;

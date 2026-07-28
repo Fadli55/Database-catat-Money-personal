@@ -1,0 +1,52 @@
+DELIMITER $$
+CREATE PROCEDURE sp_evaluasi_anggaran(
+    IN p_pengguna_id INT,
+    IN p_bulan INT,
+    OUT p_ringkasan VARCHAR(1000)
+)
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_kategori_id INT;
+    DECLARE v_nama_kategori VARCHAR(100);
+    DECLARE v_anggaran DECIMAL(15,2);
+    DECLARE v_realisasi DECIMAL(15,2);
+    DECLARE v_status VARCHAR(30);
+
+    DECLARE cur_anggaran CURSOR FOR
+        SELECT a.kategori_id, k.nama_kategori, a.jumlah_anggaran
+          FROM anggaran_bulanan a
+          JOIN kategori_transaksi k ON k.kategori_id = a.kategori_id
+         WHERE a.pengguna_id = p_pengguna_id AND a.bulan = p_bulan;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    SET p_ringkasan = '';
+
+    OPEN cur_anggaran;
+    baca_anggaran: LOOP
+        FETCH cur_anggaran INTO v_kategori_id, v_nama_kategori, v_anggaran;
+        IF done THEN
+            LEAVE baca_anggaran;
+        END IF;
+
+        SELECT IFNULL(SUM(jumlah), 0) INTO v_realisasi
+          FROM transaksi
+         WHERE pengguna_id = p_pengguna_id
+           AND kategori_id = v_kategori_id
+           AND jenis_transaksi = 'pengeluaran'
+           AND MONTH(tanggal_transaksi) = p_bulan;
+
+        CASE
+            WHEN v_realisasi > v_anggaran THEN SET v_status = 'MELEBIHI ANGGARAN';
+            WHEN v_realisasi >= v_anggaran * 0.8 THEN SET v_status = 'MENDEKATI LIMIT';
+            ELSE SET v_status = 'AMAN';
+        END CASE;
+
+        SET p_ringkasan = CONCAT(p_ringkasan, v_nama_kategori, ': ', v_status, '; ');
+    END LOOP baca_anggaran;
+    CLOSE cur_anggaran;
+
+    IF p_ringkasan = '' THEN
+        SET p_ringkasan = 'Tidak ada data anggaran untuk pengguna/bulan tersebut';
+    END IF;
+END$$
+DELIMITER ;

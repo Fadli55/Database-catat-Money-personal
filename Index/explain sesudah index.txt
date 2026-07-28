@@ -1,0 +1,2 @@
+EXPLAIN SELECT * FROM transaksi
+ WHERE kategori_id = 4 AND tanggal_transaksi >= '2025-01-01';

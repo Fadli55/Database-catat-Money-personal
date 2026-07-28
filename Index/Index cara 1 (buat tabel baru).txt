@@ -1,0 +1,11 @@
+CREATE TABLE transaksi_arsip (
+    arsip_id INT NOT NULL AUTO_INCREMENT,
+    pengguna_id INT,
+    kategori_id INT,
+    jenis_transaksi VARCHAR(50),
+    jumlah DECIMAL(15,2),
+    tanggal_transaksi DATE,
+    deskripsi VARCHAR(255),
+    PRIMARY KEY (arsip_id),
+    INDEX idx_arsip_pengguna_tanggal (pengguna_id, tanggal_transaksi)
+);

@@ -1,0 +1,1 @@
+SHOW TRIGGERS FROM catat_uang_sendiri;

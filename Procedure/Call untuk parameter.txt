@@ -1,0 +1,2 @@
+CALL sp_evaluasi_anggaran(1, 2, @hasil_evaluasi);
+SELECT @hasil_evaluasi AS ringkasan_anggaran;

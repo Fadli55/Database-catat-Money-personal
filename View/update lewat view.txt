@@ -1,0 +1,5 @@
+UPDATE view_pengeluaran_besar
+   SET jumlah = jumlah + 50000
+ WHERE transaksi_id = 2;
+
+SELECT * FROM view_pengeluaran_besar WHERE transaksi_id = 2;

@@ -1,0 +1,2 @@
+ALTER TABLE anggaran_bulanan
+    ADD INDEX idx_anggaran_pengguna_bulan_tahun (pengguna_id, bulan, tahun);

@@ -1,0 +1,55 @@
+DELIMITER $$
+CREATE PROCEDURE sp_ringkasan_saldo_pengguna()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_pengguna_id INT;
+    DECLARE v_nama VARCHAR(150);
+    DECLARE v_pemasukan DECIMAL(15,2);
+    DECLARE v_pengeluaran DECIMAL(15,2);
+    DECLARE v_saldo DECIMAL(15,2);
+    DECLARE v_status VARCHAR(20);
+
+    DECLARE cur_pengguna CURSOR FOR SELECT pengguna_id, nama FROM pengguna;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_ringkasan_saldo;
+    CREATE TEMPORARY TABLE tmp_ringkasan_saldo (
+        pengguna_id INT,
+        nama VARCHAR(150),
+        total_pemasukan DECIMAL(15,2),
+        total_pengeluaran DECIMAL(15,2),
+        saldo DECIMAL(15,2),
+        status VARCHAR(20)
+    );
+
+    OPEN cur_pengguna;
+    baca_pengguna: LOOP
+        FETCH cur_pengguna INTO v_pengguna_id, v_nama;
+        IF done THEN
+            LEAVE baca_pengguna;
+        END IF;
+
+        SELECT IFNULL(SUM(CASE WHEN jenis_transaksi = 'pemasukan' THEN jumlah ELSE 0 END), 0),
+               IFNULL(SUM(CASE WHEN jenis_transaksi = 'pengeluaran' THEN jumlah ELSE 0 END), 0)
+          INTO v_pemasukan, v_pengeluaran
+          FROM transaksi
+         WHERE pengguna_id = v_pengguna_id;
+
+        SET v_saldo = v_pemasukan - v_pengeluaran;
+
+        IF v_saldo > 0 THEN
+            SET v_status = 'Surplus';
+        ELSEIF v_saldo = 0 THEN
+            SET v_status = 'Impas';
+        ELSE
+            SET v_status = 'Defisit';
+        END IF;
+
+        INSERT INTO tmp_ringkasan_saldo
+        VALUES (v_pengguna_id, v_nama, v_pemasukan, v_pengeluaran, v_saldo, v_status);
+    END LOOP baca_pengguna;
+    CLOSE cur_pengguna;
+
+    SELECT * FROM tmp_ringkasan_saldo;
+END$$
+DELIMITER ;

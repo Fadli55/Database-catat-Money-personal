@@ -1,0 +1,4 @@
+CREATE VIEW view_transaksi_pengeluaran AS
+SELECT transaksi_id, pengguna_id, kategori_id, jenis_transaksi, jumlah, tanggal_transaksi, deskripsi
+  FROM transaksi
+ WHERE jenis_transaksi = 'pengeluaran';

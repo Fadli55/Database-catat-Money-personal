@@ -1,0 +1,5 @@
+CREATE VIEW view_pengeluaran_besar AS
+SELECT *
+  FROM view_transaksi_pengeluaran
+ WHERE jumlah > 1000000
+ WITH CASCADED CHECK OPTION;

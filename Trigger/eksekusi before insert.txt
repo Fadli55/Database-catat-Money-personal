@@ -1,0 +1,4 @@
+INSERT INTO transaksi (pengguna_id, kategori_id, jenis_transaksi, jumlah, tanggal_transaksi, deskripsi, dibuat)
+VALUES (1, 4, NULL, -150000, '2026-07-28', 'Uji trigger validasi otomatis', NOW());
+
+SELECT * FROM transaksi ORDER BY transaksi_id DESC LIMIT 1;

@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS log_aktivitas (
+    log_id INT NOT NULL AUTO_INCREMENT,
+    nama_tabel VARCHAR(50),
+    aksi VARCHAR(20),
+    id_terkait INT,
+    keterangan VARCHAR(255),
+    waktu DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (log_id)
+) ENGINE=InnoDB;
+
+DELIMITER $$
+CREATE TRIGGER trg_log_perubahan_anggaran
+AFTER UPDATE ON anggaran_bulanan
+FOR EACH ROW
+BEGIN
+    IF OLD.jumlah_anggaran <> NEW.jumlah_anggaran THEN
+        INSERT INTO log_aktivitas (nama_tabel, aksi, id_terkait, keterangan)
+        VALUES (
+            'anggaran_bulanan',
+            'UPDATE',
+            NEW.anggaran_id,
+            CONCAT('Anggaran berubah dari ', OLD.jumlah_anggaran, ' menjadi ', NEW.jumlah_anggaran)
+        );
+    END IF;
+END$$
+DELIMITER ;
