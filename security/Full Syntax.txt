@@ -1,0 +1,31 @@
+CREATE USER 'lezuy'@'localhost' IDENTIFIED BY '123123123';
+CREATE USER 'alfala'@'localhost' IDENTIFIED BY 'lamanih';
+CREATE USER 'birokrat'@'localhost' IDENTIFIED BY 'temandekat';
+
+CREATE ROLE 'orang_viewer';
+CREATE ROLE 'orang_editor';
+CREATE ROLE 'orang_admin';
+
+GRANT ALL ON catat_uang_sendiri.* TO 'orang_admin';
+
+GRANT SELECT ON catat_uang_sendiri.view_akun_aman TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.view_pengeluaran_besar TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.view_transaksi_pengeluaran TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.transaksi TO 'orang_viewer';
+GRANT EXECUTE ON PROCEDURE catat_uang_sendiri.sp_evaluasi_anggaran TO 'orang_viewer';
+
+GRANT INSERT, DELETE ON catat_uang_sendiri.transaksi TO 'orang_editor';
+GRANT SELECT ON catat_uang_sendiri.view_transaksi_pengeluaran TO 'orang_editor';
+GRANT EXECUTE ON PROCEDURE catat_uang_sendiri.sp_evaluasi_anggaran TO 'orang_editor';
+
+GRANT 'orang_admin' TO 'lezuy'@'localhost';
+GRANT 'orang_editor' TO 'alfala'@'localhost';
+GRANT 'orang_viewer' TO 'birokrat'@'localhost';
+
+GRANT 'orang_admin' TO 'root'@'localhost';
+GRANT 'orang_editor' TO 'root'@'localhost';
+GRANT 'orang_viewer' TO 'root'@'localhost';
+
+SET DEFAULT ROLE 'orang_admin' FOR 'lezuy'@'localhost';
+SET DEFAULT ROLE 'orang_editor' FOR 'alfala'@'localhost';
+SET DEFAULT ROLE 'orang_viewer' FOR 'birokrat'@'localhost';

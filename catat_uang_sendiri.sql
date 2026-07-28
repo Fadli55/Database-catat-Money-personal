@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 28, 2026 at 01:55 PM
+-- Generation Time: Jul 28, 2026 at 02:00 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -2986,7 +2986,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `view_pengeluaran_besar`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_pengeluaran_besar`  AS SELECT `view_transaksi_pengeluaran`.`transaksi_id` AS `transaksi_id`, `view_transaksi_pengeluaran`.`pengguna_id` AS `pengguna_id`, `view_transaksi_pengeluaran`.`kategori_id` AS `kategori_id`, `view_transaksi_pengeluaran`.`jenis_transaksi` AS `jenis_transaksi`, `view_transaksi_pengeluaran`.`jumlah` AS `jumlah`, `view_transaksi_pengeluaran`.`tanggal_transaksi` AS `tanggal_transaksi`, `view_transaksi_pengeluaran`.`deskripsi` AS `deskripsi` FROM `view_transaksi_pengeluaran` WHERE `view_transaksi_pengeluaran`.`jumlah` > 1000000WITH CASCADEDCHECK OPTION  ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_pengeluaran_besar`  AS SELECT `view_transaksi_pengeluaran`.`transaksi_id` AS `transaksi_id`, `view_transaksi_pengeluaran`.`pengguna_id` AS `pengguna_id`, `view_transaksi_pengeluaran`.`kategori_id` AS `kategori_id`, `view_transaksi_pengeluaran`.`jenis_transaksi` AS `jenis_transaksi`, `view_transaksi_pengeluaran`.`jumlah` AS `jumlah`, `view_transaksi_pengeluaran`.`tanggal_transaksi` AS `tanggal_transaksi`, `view_transaksi_pengeluaran`.`deskripsi` AS `deskripsi` FROM `view_transaksi_pengeluaran` WHERE `view_transaksi_pengeluaran`.`jumlah` > 1000000 WITH CASCADED CHECK OPTION  ;
 
 -- --------------------------------------------------------
 
