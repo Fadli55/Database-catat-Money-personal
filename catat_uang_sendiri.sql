@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 27, 2026 at 09:05 PM
+-- Generation Time: Jul 28, 2026 at 11:14 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -22,6 +22,108 @@ SET time_zone = "+00:00";
 --
 
 DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_evaluasi_anggaran` (IN `p_pengguna_id` INT, IN `p_bulan` INT, OUT `p_ringkasan` VARCHAR(1000))   BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_kategori_id INT;
+    DECLARE v_nama_kategori VARCHAR(100);
+    DECLARE v_anggaran DECIMAL(15,2);
+    DECLARE v_realisasi DECIMAL(15,2);
+    DECLARE v_status VARCHAR(30);
+
+    DECLARE cur_anggaran CURSOR FOR
+        SELECT a.kategori_id, k.nama_kategori, a.jumlah_anggaran
+          FROM anggaran_bulanan a
+          JOIN kategori_transaksi k ON k.kategori_id = a.kategori_id
+         WHERE a.pengguna_id = p_pengguna_id AND a.bulan = p_bulan;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    SET p_ringkasan = '';
+
+    OPEN cur_anggaran;
+    baca_anggaran: LOOP
+        FETCH cur_anggaran INTO v_kategori_id, v_nama_kategori, v_anggaran;
+        IF done THEN
+            LEAVE baca_anggaran;
+        END IF;
+
+        SELECT IFNULL(SUM(jumlah), 0) INTO v_realisasi
+          FROM transaksi
+         WHERE pengguna_id = p_pengguna_id
+           AND kategori_id = v_kategori_id
+           AND jenis_transaksi = 'pengeluaran'
+           AND MONTH(tanggal_transaksi) = p_bulan;
+
+        CASE
+            WHEN v_realisasi > v_anggaran THEN SET v_status = 'MELEBIHI ANGGARAN';
+            WHEN v_realisasi >= v_anggaran * 0.8 THEN SET v_status = 'MENDEKATI LIMIT';
+            ELSE SET v_status = 'AMAN';
+        END CASE;
+
+        SET p_ringkasan = CONCAT(p_ringkasan, v_nama_kategori, ': ', v_status, '; ');
+    END LOOP baca_anggaran;
+    CLOSE cur_anggaran;
+
+    IF p_ringkasan = '' THEN
+        SET p_ringkasan = 'Tidak ada data anggaran untuk pengguna/bulan tersebut';
+    END IF;
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ringkasan_saldo_pengguna` ()   BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_pengguna_id INT;
+    DECLARE v_nama VARCHAR(150);
+    DECLARE v_pemasukan DECIMAL(15,2);
+    DECLARE v_pengeluaran DECIMAL(15,2);
+    DECLARE v_saldo DECIMAL(15,2);
+    DECLARE v_status VARCHAR(20);
+
+    DECLARE cur_pengguna CURSOR FOR SELECT pengguna_id, nama FROM pengguna;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    DROP TEMPORARY TABLE IF EXISTS tmp_ringkasan_saldo;
+    CREATE TEMPORARY TABLE tmp_ringkasan_saldo (
+        pengguna_id INT,
+        nama VARCHAR(150),
+        total_pemasukan DECIMAL(15,2),
+        total_pengeluaran DECIMAL(15,2),
+        saldo DECIMAL(15,2),
+        status VARCHAR(20)
+    );
+
+    OPEN cur_pengguna;
+    baca_pengguna: LOOP
+        FETCH cur_pengguna INTO v_pengguna_id, v_nama;
+        IF done THEN
+            LEAVE baca_pengguna;
+        END IF;
+
+        SELECT IFNULL(SUM(CASE WHEN jenis_transaksi = 'pemasukan' THEN jumlah ELSE 0 END), 0),
+               IFNULL(SUM(CASE WHEN jenis_transaksi = 'pengeluaran' THEN jumlah ELSE 0 END), 0)
+          INTO v_pemasukan, v_pengeluaran
+          FROM transaksi
+         WHERE pengguna_id = v_pengguna_id;
+
+        SET v_saldo = v_pemasukan - v_pengeluaran;
+
+        IF v_saldo > 0 THEN
+            SET v_status = 'Surplus';
+        ELSEIF v_saldo = 0 THEN
+            SET v_status = 'Impas';
+        ELSE
+            SET v_status = 'Defisit';
+        END IF;
+
+        INSERT INTO tmp_ringkasan_saldo
+        VALUES (v_pengguna_id, v_nama, v_pemasukan, v_pengeluaran, v_saldo, v_status);
+    END LOOP baca_pengguna;
+    CLOSE cur_pengguna;
+
+    SELECT * FROM tmp_ringkasan_saldo;
+END$$
+
 --
 -- Functions
 --
@@ -95,7 +197,7 @@ CREATE TABLE `anggaran_bulanan` (
 --
 
 INSERT INTO `anggaran_bulanan` (`anggaran_id`, `pengguna_id`, `kategori_id`, `bulan`, `tahun`, `jumlah_anggaran`, `dibuat`) VALUES
-(1, 1, 9, 2, 2026, 1500000.00, '2026-07-28 00:55:22'),
+(1, 1, 9, 2, 2026, 1750000.00, '2026-07-28 00:55:22'),
 (2, 2, 10, 3, 2026, 250750.00, '2026-07-28 00:55:22'),
 (3, 3, 7, 3, 2026, 500000.00, '2026-07-28 00:55:22'),
 (4, 4, 5, 8, 2026, 270000.00, '2026-07-28 00:55:22'),
@@ -105,6 +207,24 @@ INSERT INTO `anggaran_bulanan` (`anggaran_id`, `pengguna_id`, `kategori_id`, `bu
 (8, 8, 2, 11, 2026, 250000.00, '2026-07-28 00:55:22'),
 (9, 9, 3, 1, 2026, 250000.00, '2026-07-28 00:55:22'),
 (10, 10, 1, 12, 2026, 7000000.00, '2026-07-28 00:55:22');
+
+--
+-- Triggers `anggaran_bulanan`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_log_perubahan_anggaran` AFTER UPDATE ON `anggaran_bulanan` FOR EACH ROW BEGIN
+    IF OLD.jumlah_anggaran <> NEW.jumlah_anggaran THEN
+        INSERT INTO log_aktivitas (nama_tabel, aksi, id_terkait, keterangan)
+        VALUES (
+            'anggaran_bulanan',
+            'UPDATE',
+            NEW.anggaran_id,
+            CONCAT('Anggaran berubah dari ', OLD.jumlah_anggaran, ' menjadi ', NEW.jumlah_anggaran)
+        );
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -133,6 +253,28 @@ INSERT INTO `kategori_transaksi` (`kategori_id`, `nama_kategori`, `jenis`) VALUE
 (8, 'Subscribtion', 'pengeluaran'),
 (9, 'Investasi', 'pemasukan'),
 (10, 'Cicilan', 'pengeluaran');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `log_aktivitas`
+--
+
+CREATE TABLE `log_aktivitas` (
+  `log_id` int(11) NOT NULL,
+  `nama_tabel` varchar(50) DEFAULT NULL,
+  `aksi` varchar(20) DEFAULT NULL,
+  `id_terkait` int(11) DEFAULT NULL,
+  `keterangan` varchar(255) DEFAULT NULL,
+  `waktu` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `log_aktivitas`
+--
+
+INSERT INTO `log_aktivitas` (`log_id`, `nama_tabel`, `aksi`, `id_terkait`, `keterangan`, `waktu`) VALUES
+(1, 'anggaran_bulanan', 'UPDATE', 1, 'Anggaran berubah dari 1500000.00 menjadi 1750000.00', '2026-07-28 14:52:04');
 
 -- --------------------------------------------------------
 
@@ -214,7 +356,7 @@ CREATE TABLE `transaksi` (
 
 INSERT INTO `transaksi` (`transaksi_id`, `pengguna_id`, `kategori_id`, `jenis_transaksi`, `jumlah`, `tanggal_transaksi`, `deskripsi`, `dibuat`) VALUES
 (1, 4, 1, 'pemasukan', 1064028.44, '2025-02-10', 'Dolor itaque tempore voluptates.', '2026-02-22 19:10:54'),
-(2, 3, 6, 'pengeluaran', 4327001.65, '2026-03-01', 'Magnam laudantium quas dolorum.', '2026-04-19 12:19:46'),
+(2, 3, 6, 'pengeluaran', 4377001.65, '2026-03-01', 'Magnam laudantium quas dolorum.', '2026-04-19 12:19:46'),
 (3, 6, 4, 'pengeluaran', 1061179.34, '2025-10-16', 'Nulla magnam et magni.', '2025-03-15 06:59:02'),
 (4, 8, 7, 'pengeluaran', 4440079.23, '2024-10-14', 'Omnis dolor illo iusto.', '2025-07-03 12:59:33'),
 (5, 3, 3, 'pemasukan', 806543.92, '2025-09-05', 'Deleniti accusantium molestias quas fugit.', '2025-04-06 06:17:26'),
@@ -2718,7 +2860,43 @@ INSERT INTO `transaksi` (`transaksi_id`, `pengguna_id`, `kategori_id`, `jenis_tr
 (2497, 1, 3, 'pemasukan', 135551.99, '2025-06-23', 'Iure accusantium assumenda exercitationem.', '2026-04-27 18:52:29'),
 (2498, 3, 1, 'pemasukan', 2251379.58, '2025-11-08', 'Recusandae voluptates recusandae doloremque.', '2025-08-20 16:06:17'),
 (2499, 9, 4, 'pengeluaran', 2900162.66, '2025-08-30', 'Ullam esse necessitatibus esse molestias quis.', '2024-10-06 14:40:55'),
-(2500, 5, 3, 'pemasukan', 583982.26, '2025-09-14', 'Aperiam dolor neque iste aut incidunt.', '2025-08-05 12:04:35');
+(2500, 5, 3, 'pemasukan', 583982.26, '2025-09-14', 'Aperiam dolor neque iste aut incidunt.', '2025-08-05 12:04:35'),
+(2501, 1, 4, 'pengeluaran', 150000.00, '2026-07-28', 'Uji trigger validasi otomatis', '2026-07-28 14:51:05'),
+(99001, 2, 5, 'pengeluaran', 275000.00, '2026-07-28', 'Insert lewat view horizontal', NULL);
+
+--
+-- Triggers `transaksi`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_validasi_transaksi` BEFORE INSERT ON `transaksi` FOR EACH ROW BEGIN
+    IF NEW.jumlah < 0 THEN
+        SET NEW.jumlah = ABS(NEW.jumlah);
+    END IF;
+
+    IF NEW.jenis_transaksi IS NULL THEN
+        SET NEW.jenis_transaksi = (
+            SELECT jenis FROM kategori_transaksi WHERE kategori_id = NEW.kategori_id
+        );
+    END IF;
+END
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `transaksi_arsip`
+--
+
+CREATE TABLE `transaksi_arsip` (
+  `arsip_id` int(11) NOT NULL,
+  `pengguna_id` int(11) DEFAULT NULL,
+  `kategori_id` int(11) DEFAULT NULL,
+  `jenis_transaksi` varchar(50) DEFAULT NULL,
+  `jumlah` decimal(15,2) DEFAULT NULL,
+  `tanggal_transaksi` date DEFAULT NULL,
+  `deskripsi` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -2747,6 +2925,78 @@ INSERT INTO `transaksi_tag` (`tag_id`, `transaksi_id`) VALUES
 (8, 27),
 (8, 105);
 
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `view_akun_aman`
+-- (See below for the actual view)
+--
+CREATE TABLE `view_akun_aman` (
+`akun_id` int(11)
+,`pengguna_id` int(11)
+,`nama_pengguna` varchar(70)
+,`dibuat` datetime
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `view_pengeluaran_besar`
+-- (See below for the actual view)
+--
+CREATE TABLE `view_pengeluaran_besar` (
+`transaksi_id` int(11)
+,`pengguna_id` int(11)
+,`kategori_id` int(11)
+,`jenis_transaksi` varchar(50)
+,`jumlah` decimal(15,2)
+,`tanggal_transaksi` date
+,`deskripsi` varchar(255)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `view_transaksi_pengeluaran`
+-- (See below for the actual view)
+--
+CREATE TABLE `view_transaksi_pengeluaran` (
+`transaksi_id` int(11)
+,`pengguna_id` int(11)
+,`kategori_id` int(11)
+,`jenis_transaksi` varchar(50)
+,`jumlah` decimal(15,2)
+,`tanggal_transaksi` date
+,`deskripsi` varchar(255)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `view_akun_aman`
+--
+DROP TABLE IF EXISTS `view_akun_aman`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_akun_aman`  AS SELECT `akun`.`akun_id` AS `akun_id`, `akun`.`pengguna_id` AS `pengguna_id`, `akun`.`nama_pengguna` AS `nama_pengguna`, `akun`.`dibuat` AS `dibuat` FROM `akun` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `view_pengeluaran_besar`
+--
+DROP TABLE IF EXISTS `view_pengeluaran_besar`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_pengeluaran_besar`  AS SELECT `view_transaksi_pengeluaran`.`transaksi_id` AS `transaksi_id`, `view_transaksi_pengeluaran`.`pengguna_id` AS `pengguna_id`, `view_transaksi_pengeluaran`.`kategori_id` AS `kategori_id`, `view_transaksi_pengeluaran`.`jenis_transaksi` AS `jenis_transaksi`, `view_transaksi_pengeluaran`.`jumlah` AS `jumlah`, `view_transaksi_pengeluaran`.`tanggal_transaksi` AS `tanggal_transaksi`, `view_transaksi_pengeluaran`.`deskripsi` AS `deskripsi` FROM `view_transaksi_pengeluaran` WHERE `view_transaksi_pengeluaran`.`jumlah` > 1000000WITH CASCADEDCHECK OPTION  ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `view_transaksi_pengeluaran`
+--
+DROP TABLE IF EXISTS `view_transaksi_pengeluaran`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_transaksi_pengeluaran`  AS SELECT `transaksi`.`transaksi_id` AS `transaksi_id`, `transaksi`.`pengguna_id` AS `pengguna_id`, `transaksi`.`kategori_id` AS `kategori_id`, `transaksi`.`jenis_transaksi` AS `jenis_transaksi`, `transaksi`.`jumlah` AS `jumlah`, `transaksi`.`tanggal_transaksi` AS `tanggal_transaksi`, `transaksi`.`deskripsi` AS `deskripsi` FROM `transaksi` WHERE `transaksi`.`jenis_transaksi` = 'pengeluaran' ;
+
 --
 -- Indexes for dumped tables
 --
@@ -2764,13 +3014,20 @@ ALTER TABLE `akun`
 ALTER TABLE `anggaran_bulanan`
   ADD PRIMARY KEY (`anggaran_id`),
   ADD KEY `pengguna_id` (`pengguna_id`),
-  ADD KEY `kategori_id` (`kategori_id`);
+  ADD KEY `kategori_id` (`kategori_id`),
+  ADD KEY `idx_anggaran_pengguna_bulan_tahun` (`pengguna_id`,`bulan`,`tahun`);
 
 --
 -- Indexes for table `kategori_transaksi`
 --
 ALTER TABLE `kategori_transaksi`
   ADD PRIMARY KEY (`kategori_id`);
+
+--
+-- Indexes for table `log_aktivitas`
+--
+ALTER TABLE `log_aktivitas`
+  ADD PRIMARY KEY (`log_id`);
 
 --
 -- Indexes for table `pengguna`
@@ -2790,7 +3047,15 @@ ALTER TABLE `tag`
 ALTER TABLE `transaksi`
   ADD PRIMARY KEY (`transaksi_id`),
   ADD KEY `pengguna_id` (`pengguna_id`),
-  ADD KEY `kategori_id` (`kategori_id`);
+  ADD KEY `kategori_id` (`kategori_id`),
+  ADD KEY `idx_transaksi_kategori_tanggal` (`kategori_id`,`tanggal_transaksi`);
+
+--
+-- Indexes for table `transaksi_arsip`
+--
+ALTER TABLE `transaksi_arsip`
+  ADD PRIMARY KEY (`arsip_id`),
+  ADD KEY `idx_arsip_pengguna_tanggal` (`pengguna_id`,`tanggal_transaksi`);
 
 --
 -- Indexes for table `transaksi_tag`
@@ -2822,6 +3087,12 @@ ALTER TABLE `kategori_transaksi`
   MODIFY `kategori_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT for table `log_aktivitas`
+--
+ALTER TABLE `log_aktivitas`
+  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `pengguna`
 --
 ALTER TABLE `pengguna`
@@ -2837,7 +3108,13 @@ ALTER TABLE `tag`
 -- AUTO_INCREMENT for table `transaksi`
 --
 ALTER TABLE `transaksi`
-  MODIFY `transaksi_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2501;
+  MODIFY `transaksi_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99002;
+
+--
+-- AUTO_INCREMENT for table `transaksi_arsip`
+--
+ALTER TABLE `transaksi_arsip`
+  MODIFY `arsip_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables
