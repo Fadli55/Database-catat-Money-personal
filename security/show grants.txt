@@ -1,0 +1,3 @@
+SHOW GRANTS FOR lezuy@localhost;
+SHOW GRANTS FOR 'alfala'@'localhost';
+SHOW GRANTS FOR 'birokrat'@'localhost';

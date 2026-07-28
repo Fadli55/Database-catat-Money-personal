@@ -1,0 +1,9 @@
+GRANT 'orang_admin' TO 'lezuy'@'localhost';
+GRANT 'orang_editor' TO 'alfala'@'localhost';
+GRANT 'orang_viewer' TO 'birokrat'@'localhost';
+
+SET DEFAULT ROLE 'orang_admin' FOR 'lezuy'@'localhost';
+SET DEFAULT ROLE 'orang_editor' FOR 'alfala'@'localhost';
+SET DEFAULT ROLE 'orang_viewer' FOR 'birokrat'@'localhost';
+
+FLUSH PRIVILEGES;

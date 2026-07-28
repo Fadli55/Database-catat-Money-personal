@@ -1,0 +1,14 @@
+grant all on catat_uang_sendiri.* to 'orang_admin';
+
+GRANT SELECT ON catat_uang_sendiri.view_akun_aman TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.view_pengeluaran_besar TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.view_transaksi_pengeluaran TO 'orang_viewer';
+GRANT SELECT ON catat_uang_sendiri.transaksi TO 'orang_viewer';
+GRANT EXECUTE ON PROCEDURE catat_uang_sendiri.sp_evaluasi_anggaran TO 'orang_viewer';
+
+GRANT INSERT, DELETE ON catat_uang_sendiri.transaksi TO 'orang_editor';
+GRANT SELECT ON catat_uang_sendiri.view_transaksi_pengeluaran TO 'orang_editor';
+GRANT EXECUTE ON PROCEDURE catat_uang_sendiri.sp_evaluasi_anggaran TO 'orang_editor';
+
+
+FLUSH PRIVILEGES;

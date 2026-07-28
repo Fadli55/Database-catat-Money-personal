@@ -1,0 +1,7 @@
+create user 'lezuy'@'localhost' identified by '123123123';
+create user 'Alfala'@'localhost' identified by 'lamanih';
+create user 'Birokrat'@'localhost' identified by 'temandekat';
+
+create role 'orang_viewer';
+create role 'orang_editor';
+create role 'orang_admin';

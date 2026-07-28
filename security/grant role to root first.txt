@@ -1,0 +1,5 @@
+GRANT 'orang_admin' TO 'root'@'localhost';
+GRANT 'orang_editor' TO 'root'@'localhost';
+GRANT 'orang_viewer' TO 'root'@'localhost';
+
+
