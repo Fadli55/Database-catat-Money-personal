@@ -6,7 +6,7 @@ CREATE ROLE 'orang_viewer';
 CREATE ROLE 'orang_editor';
 CREATE ROLE 'orang_admin';
 
-GRANT ALL ON catat_uang_sendiri.* TO 'orang_admin';
+GRANT ALL PRIVILEGES ON catat_uang_sendiri.* TO 'orang_admin';
 
 GRANT SELECT ON catat_uang_sendiri.view_akun_aman TO 'orang_viewer';
 GRANT SELECT ON catat_uang_sendiri.view_pengeluaran_besar TO 'orang_viewer';
